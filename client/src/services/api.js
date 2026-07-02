@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 // Configure default axios instance
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const api = axios.create({
-  baseURL: '', // Proxied through Vite
+  baseURL: API_BASE,
 });
 
 // Interceptor to attach JWT token to outgoing HTTP requests

@@ -21,8 +21,9 @@ export const SocketProvider = ({ children }) => {
 
     const token = localStorage.getItem('token');
     
-    // Connect to WebSocket server (using Vite proxy)
-    const newSocket = io('/', {
+    // Connect to WebSocket server (using VITE_API_URL or relative proxy)
+    const serverUrl = import.meta.env.VITE_API_URL || '/';
+    const newSocket = io(serverUrl, {
       auth: { token }
     });
 
