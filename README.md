@@ -39,3 +39,4 @@ npm run dev
 The application will be accessible at:
 - **Client (Frontend):** `http://localhost:5173`
 - **Server (API/Sockets):** `http://localhost:5000`
+"# tea-realtime-chat-app" 
