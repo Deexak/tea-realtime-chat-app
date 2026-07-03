@@ -2,7 +2,7 @@
   "name": "real-time-chat-app-root",
   "version": "1.0.0",
   "description": "Root configuration for Real-Time Chat Application",
-  "main": "index.js",
+  "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
     "build": "npm run build --prefix client",
