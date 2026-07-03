@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
-import { getRooms, createRoom, getMessages, getOrCreateDM, uploadFile, updateProfile, deleteRoomApi, deleteAccountApi } from '../services/api';
+import { getRooms, createRoom, getMessages, getOrCreateDM, uploadFile, updateProfile, deleteRoomApi, deleteAccountApi, unlockRoomApi } from '../services/api';
 import { 
   LogOut, Plus, Send, Users, Hash, 
   MessageSquare, Menu, X, Smile, Loader2, Paperclip, FileText, Settings, Palette,
-  Home, Search, Heart, Edit, ChevronLeft, ChevronDown, Phone, Video, Info, Trash2, Clock
+  Home, Search, Heart, Edit, ChevronLeft, ChevronDown, Phone, Video, Info, Trash2, Clock, Lock, Key
 } from 'lucide-react';
 import EmojiPicker from './EmojiPicker';
 
@@ -228,6 +228,15 @@ const ChatRoom = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeInboxTab, setActiveInboxTab] = useState('messages');
   const [likedMessages, setLikedMessages] = useState(new Set());
+
+  // Room Passcode Lock State
+  const [newRoomPasscode, setNewRoomPasscode] = useState('');
+  const [showLockModal, setShowLockModal] = useState(false);
+  const [lockedRoomToUnlock, setLockedRoomToUnlock] = useState(null);
+  const [passcodeInput, setPasscodeInput] = useState('');
+  const [passcodeError, setPasscodeError] = useState('');
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [unlockedRoomIds, setUnlockedRoomIds] = useState(new Set());
   const [notifications, setNotifications] = useState([
     {
       id: '1',
@@ -542,7 +551,7 @@ const ChatRoom = () => {
     setShowEmojiPicker(false);
   };
 
-  // Create room
+  // Create room with optional passcode lock
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     setRoomError('');
@@ -556,18 +565,56 @@ const ChatRoom = () => {
       const data = await createRoom({
         name: newRoomName.trim(),
         description: newRoomDesc.trim(),
-        isPrivate: false
+        isPrivate: false,
+        passcode: newRoomPasscode.trim()
       });
       
       setRooms((prev) => [data, ...prev]);
       setActiveRoom(data);
       setNewRoomName('');
       setNewRoomDesc('');
+      setNewRoomPasscode('');
       setShowAddRoomModal(false);
     } catch (err) {
       setRoomError(err.response?.data?.message || 'Failed to create room.');
     } finally {
       setIsCreatingRoom(false);
+    }
+  };
+
+  const handleRoomSelect = (room) => {
+    const creatorId = typeof room.creator === 'object' ? room.creator?._id : room.creator;
+    const isCreator = String(creatorId) === String(user?._id);
+    if (room.isLocked && !isCreator && !unlockedRoomIds.has(room._id)) {
+      setLockedRoomToUnlock(room);
+      setPasscodeInput('');
+      setPasscodeError('');
+      setShowLockModal(true);
+      return;
+    }
+    setActiveRoom(room);
+    setMobileView('chat');
+  };
+
+  const handleUnlockSubmit = async (e) => {
+    e.preventDefault();
+    if (!passcodeInput.trim()) {
+      setPasscodeError('Please enter room password/PIN');
+      return;
+    }
+    setIsUnlocking(true);
+    setPasscodeError('');
+    try {
+      await unlockRoomApi(lockedRoomToUnlock._id, passcodeInput.trim());
+      setUnlockedRoomIds((prev) => new Set(prev).add(lockedRoomToUnlock._id));
+      setActiveRoom(lockedRoomToUnlock);
+      setShowLockModal(false);
+      setMobileView('chat');
+    } catch (err) {
+      setPasscodeError(err.response?.data?.message || 'Incorrect room password!');
+      triggerToastError('Incorrect room password!');
+    } finally {
+      setIsUnlocking(false);
     }
   };
 
@@ -1149,10 +1196,7 @@ const ChatRoom = () => {
                     return (
                       <button
                         key={room._id}
-                        onClick={() => {
-                          setActiveRoom(room);
-                          setMobileView('chat');
-                        }}
+                        onClick={() => handleRoomSelect(room)}
                         style={{
                           width: '100%',
                           padding: '10px 12px',
@@ -1168,13 +1212,25 @@ const ChatRoom = () => {
                           transition: 'all 0.2s ease'
                         }}
                       >
-                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: isActive ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: isActive ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.1)', flexShrink: 0, position: 'relative' }}>
                           <Hash size={20} style={{ color: isActive ? 'var(--primary)' : 'var(--text-main)' }} />
+                          {room.isLocked && (
+                            <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: '#18181b', borderRadius: '50%', padding: '2px', border: '1px solid rgba(255,255,255,0.2)' }}>
+                              <Lock size={12} style={{ color: '#ef4444' }} />
+                            </div>
+                          )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <h4 style={{ fontSize: '14px', fontWeight: isActive ? '700' : '500', color: 'var(--text-main)', margin: 0 }}>
-                            {room.name}
-                          </h4>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <h4 style={{ fontSize: '14px', fontWeight: isActive ? '700' : '500', color: 'var(--text-main)', margin: 0 }}>
+                              {room.name}
+                            </h4>
+                            {room.isLocked && (
+                              <span style={{ fontSize: '10px', background: 'rgba(239,68,68,0.15)', color: '#ef4444', padding: '1px 6px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                <Lock size={10} /> Locked
+                              </span>
+                            )}
+                          </div>
                           <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {room.description || 'Public channel'}
                           </p>
@@ -1828,6 +1884,23 @@ const ChatRoom = () => {
                 />
               </div>
 
+              <div className="form-group">
+                <label htmlFor="roomPasscode" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Lock size={12} style={{ color: '#ef4444' }} />
+                  <span>Room Password / PIN (Optional 🔒)</span>
+                </label>
+                <input
+                  id="roomPasscode"
+                  type="password"
+                  className="glass-input"
+                  placeholder="Leave blank for public room"
+                  value={newRoomPasscode}
+                  onChange={(e) => setNewRoomPasscode(e.target.value)}
+                  maxLength={20}
+                  disabled={isCreatingRoom}
+                />
+              </div>
+
               <button 
                 type="submit" 
                 className="glass-button" 
@@ -1836,6 +1909,110 @@ const ChatRoom = () => {
               >
                 {isCreatingRoom ? 'Creating...' : 'Create Room'}
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Locked Room Password Unlock Modal */}
+      {showLockModal && lockedRoomToUnlock && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1200,
+            padding: '20px'
+          }}
+        >
+          <div 
+            className="glass-panel" 
+            style={{
+              width: '100%',
+              maxWidth: '360px',
+              padding: '28px',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              background: 'rgba(15, 15, 20, 0.95)',
+              boxShadow: '0 20px 60px rgba(239, 68, 68, 0.2)',
+              borderRadius: '16px',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+              <Lock size={28} style={{ color: '#ef4444' }} />
+            </div>
+
+            <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 6px 0' }}>
+              Locked Chat Room
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 20px 0' }}>
+              Enter password to access <strong style={{ color: 'var(--text-main)' }}>#{lockedRoomToUnlock.name}</strong>
+            </p>
+
+            <form onSubmit={handleUnlockSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="password"
+                  className="glass-input"
+                  placeholder="Enter Room Password/PIN"
+                  value={passcodeInput}
+                  onChange={(e) => setPasscodeInput(e.target.value)}
+                  style={{ width: '100%', paddingLeft: '40px' }}
+                  autoFocus
+                  disabled={isUnlocking}
+                />
+                <Key size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              </div>
+
+              {passcodeError && (
+                <p style={{ color: '#ef4444', fontSize: '12px', margin: 0, fontWeight: '600' }}>
+                  {passcodeError}
+                </p>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowLockModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '10px',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: 'var(--text-main)',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="glass-button"
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '10px',
+                    background: 'var(--primary)',
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                  disabled={isUnlocking}
+                >
+                  {isUnlocking ? 'Unlocking...' : 'Unlock Room'}
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -22,6 +22,14 @@ const RoomSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isLocked: {
+    type: Boolean,
+    default: false
+  },
+  passcode: {
+    type: String,
+    select: false
+  },
   isDM: {
     type: Boolean,
     default: false

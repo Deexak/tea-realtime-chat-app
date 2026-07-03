@@ -6,7 +6,7 @@ const Message = require('../models/Message');
 // @access  Private
 const createRoom = async (req, res, next) => {
   try {
-    const { name, description, isPrivate } = req.body;
+    const { name, description, isPrivate, passcode } = req.body;
 
     if (!name) {
       return res.status(400).json({ message: 'Room name is required' });
@@ -22,7 +22,9 @@ const createRoom = async (req, res, next) => {
       name,
       description: description || '',
       creator: req.user.id,
-      isPrivate: !!isPrivate
+      isPrivate: !!isPrivate,
+      isLocked: Boolean(passcode && passcode.trim()),
+      passcode: passcode && passcode.trim() ? passcode.trim() : undefined
     });
 
     res.status(201).json(room);
@@ -129,10 +131,36 @@ const deleteRoom = async (req, res, next) => {
   }
 };
 
+// @desc    Unlock a locked room with passcode
+// @route   POST /api/rooms/:roomId/unlock
+// @access  Private
+const unlockRoom = async (req, res, next) => {
+  try {
+    const { passcode } = req.body;
+    const room = await Room.findById(req.params.roomId).select('+passcode');
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    if (!room.isLocked) {
+      return res.json({ success: true, message: 'Room is not locked' });
+    }
+
+    if (room.passcode === passcode?.trim()) {
+      return res.json({ success: true, message: 'Room unlocked successfully' });
+    }
+
+    return res.status(401).json({ message: 'Incorrect room password/PIN' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createRoom,
   getRooms,
   getRoomDetails,
   getOrCreateDM,
-  deleteRoom
+  deleteRoom,
+  unlockRoom
 };

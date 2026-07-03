@@ -41,6 +41,11 @@ export const getOrCreateDM = async (recipientId) => {
   return response.data;
 };
 
+export const unlockRoomApi = async (roomId, passcode) => {
+  const response = await api.post(`/api/rooms/${roomId}/unlock`, { passcode });
+  return response.data;
+};
+
 // Message API Methods
 export const getMessages = async (roomId, options = {}) => {
   const { limit, before } = options;

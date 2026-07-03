@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { registerUser, loginUser, getMe, updateProfile, deleteAccount } = require('../controllers/authController');
-const { createRoom, getRooms, getRoomDetails, getOrCreateDM, deleteRoom } = require('../controllers/chatController');
+const { createRoom, getRooms, getRoomDetails, getOrCreateDM, deleteRoom, unlockRoom } = require('../controllers/chatController');
 const { createMessage, getMessages } = require('../controllers/messageController');
 const { protect } = require('../middlewares/authMiddleware');
 
@@ -17,6 +17,7 @@ router.delete('/auth/account', protect, deleteAccount);
 router.post('/rooms', protect, createRoom);
 router.get('/rooms', protect, getRooms);
 router.post('/rooms/dm', protect, getOrCreateDM);
+router.post('/rooms/:roomId/unlock', protect, unlockRoom);
 router.get('/rooms/:roomId', protect, getRoomDetails);
 router.delete('/rooms/:roomId', protect, deleteRoom);
 
