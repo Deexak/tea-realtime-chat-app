@@ -147,8 +147,9 @@ const BUBBLE_STYLES = {
 };
 
 const getAvatarUrl = (url, username = 'User') => {
-  if (!url || url.includes('dicebear.com/7.x') || url.includes('undefined')) {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'User')}&background=ef4444&color=ffffff&bold=true&length=2`;
+  const nameStr = typeof username === 'string' && username.trim() ? username : 'User';
+  if (!url || typeof url !== 'string' || url.includes('dicebear.com/7.x') || url.includes('undefined')) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(nameStr)}&background=ef4444&color=ffffff&bold=true&length=2`;
   }
   const API_BASE = import.meta.env.VITE_API_URL || '';
   if (url.startsWith('/uploads')) {
@@ -158,12 +159,23 @@ const getAvatarUrl = (url, username = 'User') => {
 };
 
 const getMediaUrl = (url) => {
-  if (!url) return '';
+  if (!url || typeof url !== 'string') return '';
   const API_BASE = import.meta.env.VITE_API_URL || '';
   if (url.startsWith('/uploads')) {
     return `${API_BASE}${url}`;
   }
   return url;
+};
+
+const getRecipient = (members, currentUserId) => {
+  if (!Array.isArray(members)) return { username: 'User', avatar: '' };
+  const found = members.find((m) => {
+    if (!m) return false;
+    const memberId = typeof m === 'object' ? (m._id || m.id) : m;
+    return String(memberId) !== String(currentUserId);
+  });
+  if (typeof found === 'object' && found !== null) return found;
+  return { username: 'User', avatar: '' };
 };
 
 const ChatRoom = () => {
@@ -1184,7 +1196,7 @@ const ChatRoom = () => {
                   </p>
                 ) : (
                   dmRooms.map((room) => {
-                    const recipient = room.members?.find((m) => m._id !== user?._id) || { username: 'User', avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=user` };
+                    const recipient = getRecipient(room.members, user?._id);
                     const isActive = activeRoom && activeRoom._id === room._id;
                     return (
                       <button
@@ -1292,7 +1304,7 @@ const ChatRoom = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {activeRoom.isDM ? (
                     (() => {
-                      const recipient = activeRoom.members?.find((m) => m._id !== user?._id) || { username: 'User', avatar: '' };
+                      const recipient = getRecipient(activeRoom.members, user?._id);
                       return (
                         <>
                           <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
