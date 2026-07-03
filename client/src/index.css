@@ -829,7 +829,7 @@ body {
   }
 
   .insta-bottom-nav {
-    display: flex !important;
+    display: flex;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -844,6 +844,10 @@ body {
     z-index: 100;
   }
 
+  .insta-bottom-nav.hide-on-chat {
+    display: none !important;
+  }
+
   .insta-inbox-sidebar {
     width: 100% !important;
     border-right: none;
@@ -852,6 +856,8 @@ body {
 
   .insta-main-chat {
     width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
   }
 }
 

@@ -838,7 +838,7 @@ const ChatRoom = () => {
       </nav>
 
       {/* 2. Instagram Mobile Bottom Nav Bar */}
-      <nav className="insta-bottom-nav">
+      <nav className={`insta-bottom-nav ${mobileView === 'chat' ? 'hide-on-chat' : ''}`}>
         <button 
           className={`insta-nav-item ${activeNavTab === 'home' ? 'active' : ''}`}
           onClick={() => {
