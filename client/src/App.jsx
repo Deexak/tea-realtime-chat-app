@@ -64,7 +64,7 @@ function AppContent() {
       const t1 = setTimeout(() => setScanStatus('ANALYZING RETINA & BIOMETRICS...'), 800);
       const t2 = setTimeout(() => setScanStatus('DECRYPTING RETRO CHANNEL PACKETS...'), 1600);
       const t3 = setTimeout(() => setScanStatus('ESTABLISHING SECURE SOCKETS...'), 2400);
-      const t4 = setTimeout(() => setScanStatus('ACCESS GRANTED. WELCOME TO TEA DIRECT.'), 3200);
+      const t4 = setTimeout(() => setScanStatus('ACCESS GRANTED. WELCOME TO TEA TEM.'), 3200);
       const t5 = setTimeout(() => setScanDone(true), 4000);
       return () => {
         clearTimeout(t1);
@@ -153,7 +153,7 @@ function AppContent() {
             margin: 0,
             textShadow: '0 0 10px rgba(239, 68, 68, 0.5)'
           }}>
-            Tea Direct
+            Tea Tem
           </h1>
           <div style={{
             height: '2px',

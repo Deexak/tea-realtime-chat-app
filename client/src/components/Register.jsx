@@ -54,10 +54,10 @@ const Register = () => {
       <div className="insta-auth-wrapper">
         {/* Main Instagram Register Card */}
         <div className="insta-auth-card">
-          <h1 className="insta-logo-text">Tea</h1>
+          <h1 className="insta-logo-text">Tea Tem</h1>
 
           <p className="insta-auth-subtitle">
-            Sign up to see photos and messages from your friends on Tea.
+            Sign up to see photos and messages from your friends on Tea Tem.
           </p>
 
           {(formError || error) && (
@@ -173,9 +173,9 @@ const Register = () => {
             <a href="#privacy">Privacy</a>
             <a href="#terms">Terms</a>
             <a href="#locations">Locations</a>
-            <a href="#lite">Tea Lite</a>
+            <a href="#lite">Tea Tem Lite</a>
           </div>
-          <span>© 2026 Tea Space</span>
+          <span>© 2026 Tea Tem</span>
         </footer>
       </div>
     </div>

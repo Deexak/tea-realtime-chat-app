@@ -36,7 +36,7 @@ const Login = () => {
       <div className="insta-auth-wrapper">
         {/* Main Instagram Login Card */}
         <div className="insta-auth-card">
-          <h1 className="insta-logo-text">Tea</h1>
+          <h1 className="insta-logo-text">Tea Tem</h1>
 
           {(formError || error) && (
             <div 
@@ -136,9 +136,9 @@ const Login = () => {
             <a href="#privacy">Privacy</a>
             <a href="#terms">Terms</a>
             <a href="#locations">Locations</a>
-            <a href="#lite">Tea Lite</a>
+            <a href="#lite">Tea Tem Lite</a>
           </div>
-          <span>© 2026 Tea Space</span>
+          <span>© 2026 Tea Tem</span>
         </footer>
       </div>
     </div>

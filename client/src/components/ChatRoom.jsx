@@ -768,7 +768,7 @@ const ChatRoom = () => {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
           <button 
             className="insta-nav-item active" 
-            title="Tea Direct"
+            title="Tea Tem"
             onClick={() => {
               setActiveNavTab('home');
               setActiveInboxTab('messages');
@@ -967,7 +967,7 @@ const ChatRoom = () => {
         <div style={{ padding: '16px 20px 8px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h1 className="insta-logo-text" style={{ fontSize: '30px', margin: 0, letterSpacing: '0.5px' }}>
-              Tea
+              Tea Tem
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button 
