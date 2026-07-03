@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
-import { getRooms, createRoom, getMessages, getOrCreateDM, uploadFile, updateProfile } from '../services/api';
+import { getRooms, createRoom, getMessages, getOrCreateDM, uploadFile, updateProfile, deleteRoomApi, deleteAccountApi } from '../services/api';
 import { 
   LogOut, Plus, Send, Users, Hash, 
   MessageSquare, Menu, X, Smile, Loader2, Paperclip, FileText, Settings, Palette,
-  Home, Search, Heart, Edit, ChevronLeft, ChevronDown, Phone, Video, Info
+  Home, Search, Heart, Edit, ChevronLeft, ChevronDown, Phone, Video, Info, Trash2
 } from 'lucide-react';
 import EmojiPicker from './EmojiPicker';
 
@@ -627,6 +627,32 @@ const ChatRoom = () => {
       setProfileError(err.response?.data?.message || 'Failed to update profile.');
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleDeleteRoom = async (roomId) => {
+    if (!window.confirm('Are you sure you want to delete this chat room? All messages in this room will be permanently removed.')) {
+      return;
+    }
+    try {
+      await deleteRoomApi(roomId);
+      setRooms((prev) => prev.filter((r) => r._id !== roomId));
+      setActiveRoom(null);
+      triggerToastError('Chat room deleted successfully.');
+    } catch (err) {
+      triggerToastError('Failed to delete chat room. Please try again.');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('⚠️ WARNING: Are you sure you want to PERMANENTLY delete your account? This action cannot be undone!')) {
+      return;
+    }
+    try {
+      await deleteAccountApi();
+      logout();
+    } catch (err) {
+      triggerToastError('Failed to delete account. Please try again.');
     }
   };
 
@@ -1310,8 +1336,12 @@ const ChatRoom = () => {
                 <button style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>
                   <Video size={22} />
                 </button>
-                <button style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>
-                  <Info size={22} />
+                <button 
+                  onClick={() => handleDeleteRoom(activeRoom._id)}
+                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                  title="Delete Chat Room"
+                >
+                  <Trash2 size={20} />
                 </button>
               </div>
             </header>
@@ -1894,6 +1924,32 @@ const ChatRoom = () => {
               >
                 {isSavingProfile ? 'Saving...' : 'Save Changes'}
               </button>
+
+              {/* Delete Account Danger Zone */}
+              <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  onClick={handleDeleteAccount}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '10px',
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#ef4444',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <Trash2 size={16} />
+                  <span>Delete Account</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>

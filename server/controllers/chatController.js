@@ -1,4 +1,5 @@
 const Room = require('../models/Room');
+const Message = require('../models/Message');
 
 // @desc    Create a new chat room
 // @route   POST /api/rooms
@@ -109,9 +110,29 @@ const getOrCreateDM = async (req, res, next) => {
   }
 };
 
+// @desc    Delete a chat room
+// @route   DELETE /api/rooms/:roomId
+// @access  Private
+const deleteRoom = async (req, res, next) => {
+  try {
+    const room = await Room.findById(req.params.roomId);
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    await Message.deleteMany({ room: req.params.roomId });
+    await Room.findByIdAndDelete(req.params.roomId);
+
+    res.json({ message: 'Chat room deleted successfully', roomId: req.params.roomId });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createRoom,
   getRooms,
   getRoomDetails,
-  getOrCreateDM
+  getOrCreateDM,
+  deleteRoom
 };

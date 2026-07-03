@@ -68,8 +68,18 @@ export const uploadFile = async (file) => {
   return response.data;
 };
 
+export const deleteRoomApi = async (roomId) => {
+  const response = await api.delete(`/api/rooms/${roomId}`);
+  return response.data;
+};
+
 export const updateProfile = async (profileData) => {
   const response = await api.put('/api/auth/profile', profileData);
+  return response.data;
+};
+
+export const deleteAccountApi = async () => {
+  const response = await api.delete('/api/auth/account');
   return response.data;
 };
 

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const { registerUser, loginUser, getMe, updateProfile } = require('../controllers/authController');
-const { createRoom, getRooms, getRoomDetails, getOrCreateDM } = require('../controllers/chatController');
+const { registerUser, loginUser, getMe, updateProfile, deleteAccount } = require('../controllers/authController');
+const { createRoom, getRooms, getRoomDetails, getOrCreateDM, deleteRoom } = require('../controllers/chatController');
 const { createMessage, getMessages } = require('../controllers/messageController');
 const { protect } = require('../middlewares/authMiddleware');
 
@@ -11,12 +11,14 @@ router.post('/auth/register', registerUser);
 router.post('/auth/login', loginUser);
 router.get('/auth/me', protect, getMe);
 router.put('/auth/profile', protect, updateProfile);
+router.delete('/auth/account', protect, deleteAccount);
 
 // Room Routes
 router.post('/rooms', protect, createRoom);
 router.get('/rooms', protect, getRooms);
 router.post('/rooms/dm', protect, getOrCreateDM);
 router.get('/rooms/:roomId', protect, getRoomDetails);
+router.delete('/rooms/:roomId', protect, deleteRoom);
 
 const multer = require('multer');
 const path = require('path');
