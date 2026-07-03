@@ -1388,17 +1388,19 @@ const ChatRoom = () => {
                   </div>
                 ) : (
                   messages.map((msg) => {
-                    const isOwnMessage = msg.sender?._id === user?._id;
-                    const senderUsername = msg.sender?.username || 'Unknown';
+                    const senderId = typeof msg.sender === 'object' && msg.sender !== null ? (msg.sender._id || msg.sender.id) : msg.sender;
+                    const isOwnMessage = Boolean(senderId && user?._id && String(senderId) === String(user._id));
+                    const senderUsername = typeof msg.sender === 'object' && msg.sender?.username ? msg.sender.username : (isOwnMessage ? (user?.username || 'You') : 'User');
+                    const senderAvatar = typeof msg.sender === 'object' && msg.sender?.avatar ? msg.sender.avatar : (isOwnMessage ? user?.avatar : '');
 
                     return (
                       <div 
                         key={msg._id} 
-                        className={`spill-msg-row ${isOwnMessage ? 'own' : ''}`}
+                        className={`spill-msg-row ${isOwnMessage ? 'own' : 'other'}`}
                       >
                         <div className="spill-msg-avatar">
                           <img 
-                            src={getAvatarUrl(msg.sender?.avatar, senderUsername)} 
+                            src={getAvatarUrl(senderAvatar, senderUsername)} 
                             alt={senderUsername} 
                             onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(senderUsername || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
                             style={{ width: '100%', height: '100%', borderRadius: '50%' }} 
