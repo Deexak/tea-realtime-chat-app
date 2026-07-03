@@ -266,6 +266,19 @@ const connectDB = async () => {
     });
     console.log('MongoDB connected successfully.');
     
+    // Start 24-hour Auto-Delete Message Cleanup Interval
+    setInterval(async () => {
+      try {
+        const cutoffTime = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const result = await Message.deleteMany({ createdAt: { $lt: cutoffTime } });
+        if (result.deletedCount > 0) {
+          console.log(`[24h Auto-Delete] Purged ${result.deletedCount} expired messages older than 24 hours.`);
+        }
+      } catch (err) {
+        console.error('Error running 24h auto-delete message cleanup:', err);
+      }
+    }, 60 * 60 * 1000);
+
     // Start listening only after DB connection
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

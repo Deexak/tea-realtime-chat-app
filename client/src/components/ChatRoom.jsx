@@ -5,7 +5,7 @@ import { getRooms, createRoom, getMessages, getOrCreateDM, uploadFile, updatePro
 import { 
   LogOut, Plus, Send, Users, Hash, 
   MessageSquare, Menu, X, Smile, Loader2, Paperclip, FileText, Settings, Palette,
-  Home, Search, Heart, Edit, ChevronLeft, ChevronDown, Phone, Video, Info, Trash2
+  Home, Search, Heart, Edit, ChevronLeft, ChevronDown, Phone, Video, Info, Trash2, Clock
 } from 'lucide-react';
 import EmojiPicker from './EmojiPicker';
 
@@ -1337,6 +1337,10 @@ const ChatRoom = () => {
                       </div>
                     </>
                   )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--text-muted)', background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', marginLeft: '8px' }}>
+                    <Clock size={12} style={{ color: 'var(--primary)' }} />
+                    <span style={{ whiteSpace: 'nowrap' }}>24h Disappearing</span>
+                  </div>
                 </div>
               </div>
 
