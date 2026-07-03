@@ -39,7 +39,7 @@ const Register = () => {
     }
 
     try {
-      const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`;
+      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=ef4444&color=ffffff&bold=true&length=2`;
       const success = await register(username, email, password, avatarUrl);
       if (success) {
         navigate('/');

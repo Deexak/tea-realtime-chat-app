@@ -146,9 +146,48 @@ const BUBBLE_STYLES = {
   }
 };
 
+const getAvatarUrl = (url, username = 'User') => {
+  if (!url || url.includes('dicebear.com/7.x') || url.includes('undefined')) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'User')}&background=ef4444&color=ffffff&bold=true&length=2`;
+  }
+  const API_BASE = import.meta.env.VITE_API_URL || '';
+  if (url.startsWith('/uploads')) {
+    return `${API_BASE}${url}`;
+  }
+  return url;
+};
+
+const getMediaUrl = (url) => {
+  if (!url) return '';
+  const API_BASE = import.meta.env.VITE_API_URL || '';
+  if (url.startsWith('/uploads')) {
+    return `${API_BASE}${url}`;
+  }
+  return url;
+};
+
 const ChatRoom = () => {
   const { user, logout, updateUser } = useAuth();
   const { socket, onlineUsers } = useSocket();
+  
+  // Mobile Viewport height fix
+  const [viewportHeight, setViewportHeight] = useState('100dvh');
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+
+    const handleResize = () => {
+      setViewportHeight(`${window.visualViewport.height}px`);
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
+
+    return () => {
+      window.visualViewport.removeEventListener('resize', handleResize);
+      window.visualViewport.removeEventListener('scroll', handleResize);
+    };
+  }, []);
   
   // State
   const [rooms, setRooms] = useState([]);
@@ -611,7 +650,7 @@ const ChatRoom = () => {
   const dmRooms = filteredRooms.filter((r) => r.isDM);
 
   return (
-    <div className="insta-layout">
+    <div className="insta-layout" style={{ height: viewportHeight, maxHeight: viewportHeight }}>
       {/* Toast Error Banner */}
       {toastError && (
         <div 
@@ -750,7 +789,12 @@ const ChatRoom = () => {
             }}
             title="Profile Settings"
           >
-            <img src={user?.avatar} alt={user?.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img 
+              src={getAvatarUrl(user?.avatar, user?.username)} 
+              alt={user?.username} 
+              onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
           </button>
         </div>
       </nav>
@@ -818,7 +862,12 @@ const ChatRoom = () => {
             padding: 0
           }}
         >
-          <img src={user?.avatar} alt={user?.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img 
+            src={getAvatarUrl(user?.avatar, user?.username)} 
+            alt={user?.username} 
+            onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+          />
         </button>
       </nav>
 
@@ -889,7 +938,12 @@ const ChatRoom = () => {
                 Your note...
               </div>
               <div style={{ width: '54px', height: '54px', borderRadius: '50%', padding: '2px', border: '2px solid rgba(255,255,255,0.15)', overflow: 'hidden', position: 'relative' }}>
-                <img src={user?.avatar} alt={user?.username} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                <img 
+                  src={getAvatarUrl(user?.avatar, user?.username)} 
+                  alt={user?.username} 
+                  onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} 
+                />
               </div>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '64px' }}>
                 Your note
@@ -910,7 +964,12 @@ const ChatRoom = () => {
                   Online 🟢
                 </div>
                 <div style={{ width: '54px', height: '54px', borderRadius: '50%', padding: '2px', border: '2px solid var(--primary)', overflow: 'hidden' }}>
-                  <img src={onlineUser.avatar} alt={onlineUser.username} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                  <img 
+                    src={getAvatarUrl(onlineUser.avatar, onlineUser.username)} 
+                    alt={onlineUser.username} 
+                    onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(onlineUser.username || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} 
+                  />
                 </div>
                 <span style={{ fontSize: '11px', color: 'var(--text-main)', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '64px' }}>
                   {onlineUser.username}
@@ -983,7 +1042,12 @@ const ChatRoom = () => {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--primary)', flexShrink: 0 }}>
-                        <img src={req.senderAvatar} alt={req.senderName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img 
+                          src={getAvatarUrl(req.senderAvatar, req.senderName)} 
+                          alt={req.senderName} 
+                          onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(req.senderName || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h4 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
@@ -1119,7 +1183,12 @@ const ChatRoom = () => {
                         }}
                       >
                         <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: isActive ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.1)' }}>
-                          <img src={recipient.avatar} alt={recipient.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img 
+                            src={getAvatarUrl(recipient.avatar, recipient.username)} 
+                            alt={recipient.username} 
+                            onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(recipient.username || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <h4 style={{ fontSize: '14px', fontWeight: isActive ? '700' : '500', color: 'var(--text-main)', margin: 0 }}>
@@ -1197,11 +1266,16 @@ const ChatRoom = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {activeRoom.isDM ? (
                     (() => {
-                      const recipient = activeRoom.members?.find((m) => m._id !== user?._id) || { username: 'User', avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=user` };
+                      const recipient = activeRoom.members?.find((m) => m._id !== user?._id) || { username: 'User', avatar: '' };
                       return (
                         <>
                           <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <img src={recipient.avatar} alt={recipient.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img 
+                              src={getAvatarUrl(recipient.avatar, recipient.username)} 
+                              alt={recipient.username} 
+                              onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(recipient.username || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
                           </div>
                           <div>
                             <h3 style={{ fontSize: '15px', fontWeight: '600', margin: 0 }}>{recipient.username}</h3>
@@ -1269,7 +1343,6 @@ const ChatRoom = () => {
                 ) : (
                   messages.map((msg) => {
                     const isOwnMessage = msg.sender?._id === user?._id;
-                    const senderAvatar = msg.sender?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${msg.sender?.username || 'user'}`;
                     const senderUsername = msg.sender?.username || 'Unknown';
 
                     return (
@@ -1278,7 +1351,12 @@ const ChatRoom = () => {
                         className={`spill-msg-row ${isOwnMessage ? 'own' : ''}`}
                       >
                         <div className="spill-msg-avatar">
-                          <img src={senderAvatar} alt={senderUsername} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                          <img 
+                            src={getAvatarUrl(msg.sender?.avatar, senderUsername)} 
+                            alt={senderUsername} 
+                            onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(senderUsername || 'U')}&background=ef4444&color=ffffff&bold=true`; }}
+                            style={{ width: '100%', height: '100%', borderRadius: '50%' }} 
+                          />
                         </div>
                         
                         <div className="spill-msg-col">
@@ -1288,7 +1366,12 @@ const ChatRoom = () => {
                           <div className="spill-msg-bubble" style={BUBBLE_STYLES[msg.bubbleStyle || 'default']?.style}>
                             {msg.mediaUrl && msg.mediaType === 'image' && (
                               <div style={{ marginBottom: msg.content ? '8px' : '0', borderRadius: '8px', overflow: 'hidden', maxWidth: '300px' }}>
-                                <img src={msg.mediaUrl} alt="shared image" style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'contain' }} />
+                                <img 
+                                  src={getMediaUrl(msg.mediaUrl)} 
+                                  alt="shared image" 
+                                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/300x200/ef4444/ffffff?text=Image+Unavailable'; }}
+                                  style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'contain' }} 
+                                />
                               </div>
                             )}
                             {msg.mediaUrl && msg.mediaType === 'file' && (
