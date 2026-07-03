@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server/server.js",
     "build": "npm run build --prefix client",
-    "postinstall": "npm install --prefix server && npm install --prefix client && npm run build",
+    "postinstall": "npm install --prefix server --legacy-peer-deps && npm install --prefix client --legacy-peer-deps && npm run build",
     "install-all": "npm install --legacy-peer-deps && npm install --prefix server --legacy-peer-deps && npm install --prefix client --legacy-peer-deps",
     "server": "npm start --prefix server",
     "client": "npm run dev --prefix client",
